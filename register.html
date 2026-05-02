@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kin Marché | Inscription</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <!-- Scripts Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { 
+            font-family: 'Roboto', sans-serif; 
+            background-color: #e30613; 
+            color: white;
+        }
+
+        .logo-wrapper { text-align: center; margin-bottom: 30px; }
+        .logo-container {
+            display: inline-block;
+            background: white;
+            padding: 10px 20px;
+            border: 3px solid #e30613;
+            border-radius: 8px;
+            position: relative;
+        }
+        .k-top {
+            background: white;
+            border: 3px solid #e30613;
+            border-bottom: none;
+            width: 40px;
+            height: 40px;
+            position: absolute;
+            top: -38px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e30613;
+            font-family: 'Oswald', sans-serif;
+            font-size: 24px;
+            border-radius: 5px 5px 0 0;
+        }
+        .main-text {
+            color: #e30613;
+            font-family: 'Oswald', sans-serif;
+            font-size: 32px;
+            letter-spacing: -1px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .slogan {
+            color: black;
+            font-size: 10px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-top: 5px;
+            letter-spacing: 1px;
+        }
+
+        .input-group {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 12px 15px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        .input-group input {
+            background: transparent;
+            border: none;
+            width: 100%;
+            color: #333;
+            outline: none;
+            font-size: 15px;
+        }
+        .input-group span {
+            color: #e30613;
+            font-weight: bold;
+            margin-right: 10px;
+            border-right: 1px solid #ccc;
+            padding-right: 10px;
+        }
+        .btn-register {
+            background-color: white;
+            color: #e30613;
+            width: 100%;
+            padding: 15px;
+            border-radius: 50px;
+            font-weight: 900;
+            text-transform: uppercase;
+            margin-top: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            transition: 0.3s;
+        }
+        .btn-register:active { transform: scale(0.98); }
+    </style>
+</head>
+<body class="flex items-center justify-center min-h-screen p-6">
+
+    <div class="w-full max-w-sm">
+        <div class="logo-wrapper">
+            <div class="logo-container">
+                <div class="k-top">K</div>
+                <div class="main-text">
+                    KIN <img src="https://cdn-icons-png.flaticon.com/512/1170/1170678.png" style="width:25px; filter: invert(12%) sepia(91%) saturate(6325%) hue-rotate(354deg) brightness(93%) contrast(114%);"> MARCHE
+                </div>
+            </div>
+            <div class="slogan">Au prix du grand marché</div>
+        </div>
+
+        <p class="text-center mb-8 font-bold text-lg">INSCRIPTION</p>
+
+        <form id="regForm">
+            <div class="input-group">
+                <input type="text" id="name" placeholder="Nom complet" required>
+            </div>
+            
+            <div class="input-group">
+                <span>+243</span>
+                <input type="tel" id="phone" placeholder="Numéro de téléphone" required>
+            </div>
+
+            <div class="input-group">
+                <input type="password" id="pin" placeholder="Mot de passe (6 chiffres)" inputmode="numeric" maxlength="6" required>
+            </div>
+            
+            <div class="input-group">
+                <input type="password" id="pinConfirm" placeholder="Confirmer le mot de passe" inputmode="numeric" maxlength="6" required>
+            </div>
+            
+            <div class="input-group">
+                <input type="text" id="ref" placeholder="Code d'invitation" required>
+            </div>
+
+            <button type="submit" id="submitBtn" class="btn-register">S'INSCRIRE</button>
+        </form>
+
+        <div class="mt-8 text-center">
+            <p>Déjà un compte ? <a href="index.html" class="font-bold underline">Connectez-vous ici</a></p>
+        </div>
+    </div>
+
+    <script>
+        // CONFIGURATION DE TA BASE DE DONNÉES SPÉCIFIQUE
+        const firebaseConfig = {
+            databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/"
+        };
+        
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        document.getElementById('regForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('name').value;
+            const phone = document.getElementById('phone').value;
+            const pin = document.getElementById('pin').value;
+            const pinConfirm = document.getElementById('pinConfirm').value;
+            const ref = document.getElementById('ref').value;
+            const btn = document.getElementById('submitBtn');
+
+            if (pin.length !== 6) {
+                alert("Le code PIN doit avoir 6 chiffres.");
+                return;
+            }
+            if (pin !== pinConfirm) {
+                alert("Les codes PIN ne correspondent pas.");
+                return;
+            }
+
+            btn.disabled = true;
+            btn.innerText = "PATIENTEZ...";
+
+            // Vérifier si le numéro existe déjà
+            db.ref('users').orderByChild('phone').equalTo(phone).once('value', snapshot => {
+                if (snapshot.exists()) {
+                    alert("Ce numéro est déjà utilisé.");
+                    btn.disabled = false;
+                    btn.innerText = "S'INSCRIRE";
+                } else {
+                    // Création de l'ID utilisateur et du code d'invitation propre
+                    const myInviteCode = "KIN" + Math.floor(1000 + Math.random() * 9000);
+                    
+                    // Enregistrement dans la base de données
+                    const newUserRef = db.ref('users').push();
+                    newUserRef.set({
+                        userId: newUserRef.key,
+                        name: name,
+                        phone: phone,
+                        password: pin,
+                        inviteCode: myInviteCode,
+                        referrer: ref,
+                        balance: 1000, // Ton bonus d'inscription
+                        totalEarnings: 0,
+                        dateJoined: new Date().toLocaleString()
+                    }).then(() => {
+                        alert("Compte créé avec succès ! Connectez-vous maintenant.");
+                        // Direction vers la page de connexion appelée index.html
+                        window.location.href = "index.html";
+                    }).catch(error => {
+                        alert("Erreur: " + error.message);
+                        btn.disabled = false;
+                        btn.innerText = "S'INSCRIRE";
+                    });
+                }
+            });
+        });
+    </script>
+</body>
+</html>
