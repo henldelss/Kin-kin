@@ -43,7 +43,10 @@
             <p class="text-sm font-bold mb-3">🚀 Invitez vos amis et gagnez des commissions facilement !</p>
             <p class="text-xs text-gray-600 mb-4 leading-relaxed">Chaque fois qu’un ami que vous avez invité effectue son premier achat, vous recevez une commission. Taux : 30 % - 2 % - 1 %</p>
             <a href="https://t.me/+DoNmk-4JT6BhMDM0" target="_blank" class="btn-social"><i class="fab fa-telegram" style="color:#0088cc"></i> Rejoindre le canal Telegram</a>
-            <a href="https://chat.whatsapp.com/LWXBDXWCfdd4dwa8vYYcoN" target="_blank" class="btn-social"><i class="fab fa-whatsapp" style="color:#25D366"></i> Rejoindre le groupe WhatsApp</a>
+            <!-- LIEN WHATSAPP MIS À JOUR ICI -->
+            <a href="https://chat.whatsapp.com/Igc0T3IUy4jLFH0eIwzn8m" target="_blank" class="btn-social"><i class="fab fa-whatsapp" style="color:#25D366"></i> Rejoindre le groupe WhatsApp</a>
+            <!-- BOUTON OK POUR FERMER ET RESTER SUR LE DASHBOARD -->
+            <button onclick="closeModal()" class="btn-social mt-4 bg-gray-100">OK</button>
         </div>
     </div>
 
@@ -93,7 +96,6 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE
         const firebaseConfig = { databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -102,16 +104,12 @@
         function closeModal() { document.getElementById('announcementModal').style.display = 'none'; }
         function showAbout() { alert("KIN MARCHÉ : Votre partenaire d'investissement numérique en RDC."); }
 
-        // SYNCHRONISATION ET COLLECTE AUTOMATIQUE DES GAINS
         if (userId) {
             const userRef = db.ref('users/' + userId);
-            
             userRef.on('value', async (snapshot) => {
                 const data = snapshot.val();
                 if (data) {
                     document.getElementById('user-balance').innerText = `${parseFloat(data.balance).toFixed(2)} FC`;
-                    
-                    // Logique de gains quotidiens (24h)
                     if (data.myProducts) {
                         let totalDaily = 0;
                         const now = new Date().getTime();
@@ -121,18 +119,14 @@
                         Object.keys(data.myProducts).forEach(key => {
                             const prod = data.myProducts[key];
                             totalDaily += parseFloat(prod.daily);
-
-                            // Vérifier si 24h sont passées depuis le dernier collect
                             const lastCollect = prod.lastCollectTime || new Date(prod.purchaseDate).getTime();
-                            if (now - lastCollect >= 86400000) { // 86400000 ms = 24h
+                            if (now - lastCollect >= 86400000) { 
                                 data.balance += parseFloat(prod.daily);
                                 updates[`myProducts/${key}/lastCollectTime`] = now;
                                 gainAdded = true;
                             }
                         });
-
                         document.getElementById('daily-gain').innerText = `${totalDaily.toFixed(2)} FC`;
-                        
                         if (gainAdded) {
                             updates['balance'] = data.balance;
                             await userRef.update(updates);
@@ -141,7 +135,7 @@
                 }
             });
         } else {
-            window.location.href = "index.html"; // Retour si non connecté
+            window.location.href = "index.html";
         }
 
         const images = ['IMG_5048.jpeg', 'IMG_5049.jpeg', 'IMG_5050.jpeg', 'IMG_5051.jpeg', 'IMG_5052.jpeg'];
