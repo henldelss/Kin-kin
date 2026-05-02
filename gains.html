@@ -67,7 +67,8 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="dashbord.html" class="nav-item"><i class="fas fa-sync-alt"></i><span>Commencer</span></a>
+        <!-- LIEN CORRIGÉ VERS dashboard.html -->
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-sync-alt"></i><span>Commencer</span></a>
         <a href="investir.html" class="nav-item"><i class="fas fa-list-alt"></i><span>Investir</span></a>
         <a href="gains.html" class="nav-item active"><i class="fas fa-chart-bar"></i><span>Gains</span></a>
         <a href="agent.html" class="nav-item"><i class="fas fa-paper-plane"></i><span>Agent</span></a>
@@ -75,7 +76,6 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE
         const firebaseConfig = { databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
@@ -136,7 +136,7 @@
                     keys.forEach(key => {
                         const p = products[key];
                         const lastTime = p.lastCollectTime || new Date(p.purchaseDate).getTime();
-                        const nextCollect = lastTime + 86400000; // +24h
+                        const nextCollect = lastTime + 86400000; 
 
                         html += `
                         <div class="investment-card">
