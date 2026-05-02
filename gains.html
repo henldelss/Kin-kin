@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Kin Marché | Gains</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Firebase SDK v8 -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <style>
+        body { background-color: #f0f3f7; font-family: sans-serif; padding-bottom: 100px; margin: 0; }
+        .header-section { background: #001529; color: white; padding: 20px 15px; position: relative; }
+        .progress-container { width: 100%; background: #222; height: 12px; border-radius: 6px; margin-top: 10px; display: flex; overflow: hidden; border: 1px solid #444; }
+        .progress-segment { flex: 1; border-right: 1px solid #111; background: linear-gradient(to bottom, #ff4d4d, #b30000); }
+        .stats-box { background: white; margin: 15px; border-radius: 10px; padding: 15px; display: flex; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); border: 1px solid #ddd; }
+        .stats-label { font-size: 11px; color: #666; }
+        .stats-value { font-size: 18px; font-weight: bold; color: #333; }
+        .stats-value.red { color: #e60000; }
+        .tab-container { display: flex; margin: 0 15px; gap: 10px; }
+        .tab { flex: 1; padding: 12px; text-align: center; border-radius: 25px; font-weight: bold; border: 1px solid #ddd; background: white; color: #666; }
+        .tab.active { background: #e60000; color: white; border-color: #e60000; }
+        .investment-card { background: white; margin: 15px; border-radius: 15px; overflow: hidden; box-shadow: 0 4px 10px rgba(0,0,0,0.1); border: 1px solid #eee; }
+        .product-header { padding: 10px 15px; font-weight: bold; color: #333; display: flex; justify-content: space-between; border-bottom: 1px solid #eee; }
+        .prod-img { width: 100%; height: 160px; object-fit: cover; background: #f9f9f9; }
+        .prod-info { padding: 15px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .collect-btn { background: #e60000; color: white; width: calc(100% - 30px); margin: 0 15px 15px 15px; padding: 12px; border-radius: 8px; font-weight: bold; border: none; cursor: pointer; }
+        .collect-btn:disabled { background: #ccc; cursor: not-allowed; }
+        #empty-state { text-align: center; padding: 50px 20px; color: #999; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #999; text-decoration: none; }
+        .nav-item.active { color: #e60000; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="header-section">
+        <h1 class="text-2xl font-bold">Gains</h1>
+        <div class="progress-container">
+            <div class="progress-segment"></div><div class="progress-segment"></div><div class="progress-segment"></div><div class="progress-segment"></div><div class="progress-segment"></div>
+        </div>
+    </div>
+
+    <p class="text-center text-gray-500 text-xs my-4 font-bold">- - - Mes produits de gains - - -</p>
+
+    <div class="stats-box">
+        <div>
+            <p class="stats-label">Appareils actifs :</p>
+            <p id="count-val" class="stats-value">0</p>
+        </div>
+        <div class="text-right">
+            <p class="stats-label">Revenu total :</p>
+            <p id="total-val" class="stats-value red">0.00 FC</p>
+        </div>
+    </div>
+
+    <div class="tab-container">
+        <div class="tab active">En cours</div>
+        <div class="tab">Terminé</div>
+    </div>
+
+    <div id="investments-container">
+        <div id="empty-state">
+            <p>Chargement de vos investissements...</p>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <a href="dashbord.html" class="nav-item"><i class="fas fa-sync-alt"></i><span>Commencer</span></a>
+        <a href="investir.html" class="nav-item"><i class="fas fa-list-alt"></i><span>Investir</span></a>
+        <a href="gains.html" class="nav-item active"><i class="fas fa-chart-bar"></i><span>Gains</span></a>
+        <a href="agent.html" class="nav-item"><i class="fas fa-paper-plane"></i><span>Agent</span></a>
+        <a href="profil.html" class="nav-item"><i class="fas fa-user-circle"></i><span>Profil</span></a>
+    </div>
+
+    <script>
+        // CONFIGURATION FIREBASE
+        const firebaseConfig = { databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/" };
+        if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+        const userId = localStorage.getItem('userId');
+
+        function startTimer(endTime, elementId, btnId) {
+            const timerFunc = setInterval(() => {
+                const now = new Date().getTime();
+                const distance = endTime - now;
+                const btn = document.getElementById(btnId);
+
+                if (distance < 0) {
+                    clearInterval(timerFunc);
+                    document.getElementById(elementId).innerText = "Prêt à collecter !";
+                    document.getElementById(elementId).classList.replace('text-blue-600', 'text-green-600');
+                    if(btn) btn.disabled = false;
+                } else {
+                    const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                    const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                    const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+                    document.getElementById(elementId).innerText = `${hours}h ${minutes}m ${seconds}s`;
+                    if(btn) btn.disabled = true;
+                }
+            }, 1000);
+        }
+
+        async function collectProfit(prodKey, amount) {
+            const userRef = db.ref('users/' + userId);
+            const snap = await userRef.once('value');
+            const data = snap.val();
+            const now = new Date().getTime();
+
+            await userRef.update({
+                balance: parseFloat(data.balance || 0) + parseFloat(amount)
+            });
+
+            await db.ref('users/' + userId + '/myProducts/' + prodKey).update({
+                lastCollectTime: now
+            });
+
+            alert("Profit collecté avec succès !");
+            location.reload();
+        }
+
+        if (userId) {
+            const userRef = db.ref('users/' + userId);
+            userRef.on('value', (snapshot) => {
+                const data = snapshot.val();
+                const container = document.getElementById('investments-container');
+                
+                if (data && data.myProducts) {
+                    const products = data.myProducts;
+                    const keys = Object.keys(products);
+                    document.getElementById('count-val').innerText = keys.length;
+                    document.getElementById('total-val').innerText = parseFloat(data.balance || 0).toFixed(2) + " FC";
+
+                    let html = '';
+                    keys.forEach(key => {
+                        const p = products[key];
+                        const lastTime = p.lastCollectTime || new Date(p.purchaseDate).getTime();
+                        const nextCollect = lastTime + 86400000; // +24h
+
+                        html += `
+                        <div class="investment-card">
+                            <div class="product-header">
+                                <span>${p.name}</span>
+                                <span class="text-green-500">Actif</span>
+                            </div>
+                            <img src="${p.image}" class="prod-img">
+                            <div class="prod-info">
+                                <div><p class="stats-label">Revenu quotidien</p><p class="font-bold text-sm">${p.daily} FC</p></div>
+                                <div><p class="stats-label">Prochaine collecte</p><p id="timer-${key}" class="font-bold text-sm text-blue-600">--:--:--</p></div>
+                            </div>
+                            <button id="btn-${key}" onclick="collectProfit('${key}', ${p.daily})" class="collect-btn" disabled>Collecter les profits</button>
+                        </div>`;
+                        
+                        setTimeout(() => startTimer(nextCollect, `timer-${key}`, `btn-${key}`), 100);
+                    });
+                    container.innerHTML = html;
+                } else {
+                    container.innerHTML = `<div id="empty-state"><p>Aucun investissement trouvé.</p></div>`;
+                }
+            });
+        } else {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
