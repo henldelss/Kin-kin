@@ -19,7 +19,6 @@
         .btn-lier { background-color: #e60000; color: white; width: 100%; padding: 14px; border-radius: 30px; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.3s; }
         .btn-lier:disabled { background-color: #ccc; cursor: not-allowed; }
         
-        /* Navigation basse */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #999; text-decoration: none; }
         .nav-item.active { color: #e60000; font-weight: bold; }
@@ -64,14 +63,10 @@
             <i class="fas fa-chevron-right"></i>
         </div>
 
-        <p class="text-[11px] text-gray-400 mt-4 leading-relaxed">
-            Veuillez vous assurer que les informations de votre compte de retrait sont exactes et complètes. Une fois lié, ce compte recevra vos fonds lors des retraits.
-        </p>
-
         <button id="btn-submit" onclick="saveAccount()" class="btn-lier shadow-lg shadow-red-200">Lier mon compte</button>
     </div>
 
-    <!-- Navigation Basse - Pointage identique à la page Agent -->
+    <!-- Navigation Basse -->
     <div class="bottom-nav">
         <a href="dashboard.html" class="nav-item"><i class="fas fa-sync-alt text-lg"></i><span>Commencer</span></a>
         <a href="investir.html" class="nav-item"><i class="fas fa-list-alt text-lg"></i><span>Investir</span></a>
@@ -99,27 +94,24 @@
             }
 
             if(!name || !number || !bank) {
-                alert("Veuillez remplir tous les champs avant de lier.");
+                alert("Veuillez remplir tous les champs.");
                 return;
             }
 
             btn.disabled = true;
             btn.innerText = "Liaison en cours...";
 
-            const bankInfo = {
-                titulaire: name,
-                numero: number,
-                banque: bank,
-                dateLiaison: new Date().toISOString()
-            };
-
             try {
-                await db.ref('users/' + userId + '/bankInfo').set(bankInfo);
-                localStorage.setItem('userBankInfo', JSON.stringify(bankInfo));
-                alert("Votre compte a été lié avec succès !");
+                await db.ref('users/' + userId + '/bankInfo').set({
+                    titulaire: name,
+                    numero: number,
+                    banque: bank,
+                    dateLiaison: new Date().toISOString()
+                });
+                alert("Compte lié avec succès !");
                 window.location.href = "retrait.html"; 
             } catch (error) {
-                alert("Erreur serveur.");
+                alert("Erreur lors de la liaison.");
                 btn.disabled = false;
                 btn.innerText = "Lier mon compte";
             }
