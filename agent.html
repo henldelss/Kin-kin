@@ -11,19 +11,19 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
         body { background-color: #f0f3f7; font-family: sans-serif; padding-bottom: 100px; margin: 0; }
-        .banner { background: linear-gradient(to right, #4a90e2, #1e3a5f); color: white; padding: 20px; position: relative; overflow: hidden; }
+        .banner { background: linear-gradient(to right, #e30613, #800000); color: white; padding: 20px; position: relative; overflow: hidden; }
         .banner h2 { font-size: 22px; font-weight: bold; line-height: 1.2; text-transform: uppercase; }
         .banner p { font-size: 12px; opacity: 0.9; margin-top: 5px; }
         .stats-summary { background: white; padding: 15px; margin-bottom: 10px; }
         .stats-row { display: flex; justify-content: space-between; margin-bottom: 5px; font-size: 14px; }
         .stats-label { font-weight: bold; color: #333; }
-        .stats-value { font-weight: bold; color: #3b5998; }
+        .stats-value { font-weight: bold; color: #e30613; }
         .stats-note { font-size: 10px; color: #666; margin-top: 5px; }
         .invite-card { background: white; margin: 15px; border-radius: 15px; padding: 15px; border: 1px solid #ddd; }
         .invite-header { display: flex; align-items: center; gap: 8px; font-weight: bold; color: #333; margin-bottom: 15px; }
         .link-container { background: #f8f9fa; border: 1px solid #eee; border-radius: 10px; padding: 15px; position: relative; }
         .link-text { font-size: 13px; color: #555; word-break: break-all; padding-right: 70px; font-weight: bold; }
-        .copy-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #e60000; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
+        .copy-btn { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: #e30613; color: white; border: none; padding: 6px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; cursor: pointer; }
         .level-card { background: white; margin: 10px 15px; border-radius: 15px; padding: 15px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
         .level-header { display: flex; align-items: center; justify-content: space-between; padding-bottom: 10px; border-bottom: 1px solid #f5f5f5; margin-bottom: 10px; }
         .level-title { display: flex; align-items: center; gap: 10px; font-weight: bold; font-size: 16px; }
@@ -32,7 +32,7 @@
         .val-black { color: #333; font-weight: bold; }
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; }
         .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #999; text-decoration: none; }
-        .nav-item.active { color: #e60000; font-weight: bold; }
+        .nav-item.active { color: #e30613; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -109,44 +109,48 @@
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const userId = localStorage.getItem('userId');
-        const platformLink = "https://henldelss.github.io/Kin-kin/";
+        
+        // CORRECTION : Le lien pointe maintenant vers register.html
+        const platformLink = "https://henldelss.github.io/Kin-kin/register.html";
 
         if (userId) {
-            // Générer le lien avec l'ID utilisateur
+            // Générer le lien avec l'ID utilisateur pour la page d'inscription
             document.getElementById('invite-link').innerText = `${platformLink}?ref=${userId}`;
 
-            // Calcul des statistiques de l'équipe
+            // Calcul des statistiques de l'équipe en temps réel
             db.ref('users').on('value', (snapshot) => {
                 const allUsers = snapshot.val();
                 let lv1Count = 0, lv2Count = 0, lv3Count = 0;
                 let lv1Comm = 0, lv2Comm = 0, lv3Comm = 0;
                 let totalInvest = 0;
 
-                for (let id in allUsers) {
-                    const user = allUsers[id];
-                    
-                    // Niveau 1 : Filleuls directs
-                    if (user.referrer === userId) {
-                        lv1Count++;
-                        let invest = parseFloat(user.totalInvested || 0);
-                        totalInvest += invest;
-                        lv1Comm += invest * 0.30;
+                if (allUsers) {
+                    for (let id in allUsers) {
+                        const user = allUsers[id];
+                        
+                        // Niveau 1 : Filleuls directs
+                        if (user.referrer === userId) {
+                            lv1Count++;
+                            let invest = parseFloat(user.totalInvested || 0);
+                            totalInvest += invest;
+                            lv1Comm += invest * 0.30;
 
-                        // Niveau 2 : Filleuls des filleuls
-                        for (let id2 in allUsers) {
-                            if (allUsers[id2].referrer === id) {
-                                lv2Count++;
-                                let invest2 = parseFloat(allUsers[id2].totalInvested || 0);
-                                totalInvest += invest2;
-                                lv2Comm += invest2 * 0.02;
+                            // Niveau 2 : Filleuls des filleuls
+                            for (let id2 in allUsers) {
+                                if (allUsers[id2].referrer === id) {
+                                    lv2Count++;
+                                    let invest2 = parseFloat(allUsers[id2].totalInvested || 0);
+                                    totalInvest += invest2;
+                                    lv2Comm += invest2 * 0.02;
 
-                                // Niveau 3
-                                for (let id3 in allUsers) {
-                                    if (allUsers[id3].referrer === id2) {
-                                        lv3Count++;
-                                        let invest3 = parseFloat(allUsers[id3].totalInvested || 0);
-                                        totalInvest += invest3;
-                                        lv3Comm += invest3 * 0.01;
+                                    // Niveau 3 : Filleuls de niveau 2
+                                    for (let id3 in allUsers) {
+                                        if (allUsers[id3].referrer === id2) {
+                                            lv3Count++;
+                                            let invest3 = parseFloat(allUsers[id3].totalInvested || 0);
+                                            totalInvest += invest3;
+                                            lv3Comm += invest3 * 0.01;
+                                        }
                                     }
                                 }
                             }
@@ -156,16 +160,16 @@
 
                 // Mise à jour de l'affichage
                 document.getElementById('team-size').innerText = lv1Count + lv2Count + lv3Count;
-                document.getElementById('total-team-invest').innerText = totalInvest.toFixed(2) + " FC";
+                document.getElementById('total-team-invest').innerText = totalInvest.toLocaleString('fr-FR') + " FC";
                 
                 document.getElementById('count-lv1').innerText = lv1Count;
-                document.getElementById('comm-lv1').innerText = lv1Comm.toFixed(2) + " FC";
+                document.getElementById('comm-lv1').innerText = lv1Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
                 
                 document.getElementById('count-lv2').innerText = lv2Count;
-                document.getElementById('comm-lv2').innerText = lv2Comm.toFixed(2) + " FC";
+                document.getElementById('comm-lv2').innerText = lv2Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
                 
                 document.getElementById('count-lv3').innerText = lv3Count;
-                document.getElementById('comm-lv3').innerText = lv3Comm.toFixed(2) + " FC";
+                document.getElementById('comm-lv3').innerText = lv3Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
             });
         } else {
             window.location.href = "index.html";
@@ -173,9 +177,13 @@
 
         function copyLink() {
             const link = document.getElementById('invite-link').innerText;
-            navigator.clipboard.writeText(link).then(() => {
-                alert("Lien d'invitation copié !");
-            });
+            const tempInput = document.createElement("input");
+            tempInput.value = link;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempInput);
+            alert("Lien d'invitation copié !");
         }
     </script>
 </body>
