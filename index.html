@@ -130,7 +130,7 @@
     </div>
 
     <script>
-        // CONFIGURATION DE TA BASE DE DONNÉES
+        // CONFIGURATION DE LA BASE DE DONNÉES
         const firebaseConfig = {
             databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/"
         };
@@ -148,7 +148,7 @@
             btn.disabled = true;
             btn.innerText = "CONNEXION...";
 
-            // Recherche dans le dossier 'users' (doit être le même que register.html)
+            // Recherche de l'utilisateur dans Firebase
             db.ref('users').orderByChild('phone').equalTo(phone).once('value', snapshot => {
                 if (snapshot.exists()) {
                     let userFound = false;
@@ -156,18 +156,19 @@
 
                     snapshot.forEach(childSnapshot => {
                         const userData = childSnapshot.val();
+                        // Vérification du mot de passe stocké
                         if (userData.password === password) {
                             userFound = true;
-                            userId = childSnapshot.key; // On récupère la clé unique
+                            userId = childSnapshot.key;
                         }
                     });
 
                     if (userFound) {
-                        // Sauvegarde des infos pour les autres pages
+                        // Sauvegarde de l'ID pour maintenir la session sur dashbord.html
                         localStorage.setItem('userId', userId);
                         localStorage.setItem('userPhone', phone);
                         
-                        // Redirection vers le Dashboard
+                        // Redirection immédiate vers le Dashboard
                         window.location.href = "dashbord.html";
                     } else {
                         alert("Mot de passe incorrect.");
