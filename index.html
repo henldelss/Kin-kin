@@ -1,4 +1,4 @@
- <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -6,7 +6,6 @@
     <title>Kin Marché | Connexion</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@700&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
-    <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
@@ -93,9 +92,7 @@
             margin-top: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.3);
             transition: 0.3s;
-            cursor: pointer;
         }
-        .btn-login:disabled { background-color: #f3f3f3; color: #999; cursor: not-allowed; }
         .btn-login:active { transform: scale(0.98); }
     </style>
 </head>
@@ -133,7 +130,7 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE
+        // CONFIGURATION DE TA BASE DE DONNÉES
         const firebaseConfig = {
             databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/"
         };
@@ -151,7 +148,7 @@
             btn.disabled = true;
             btn.innerText = "CONNEXION...";
 
-            // Recherche l'utilisateur par son numéro de téléphone
+            // Recherche dans le dossier 'users'
             db.ref('users').orderByChild('phone').equalTo(phone).once('value', snapshot => {
                 if (snapshot.exists()) {
                     let userFound = false;
@@ -166,11 +163,11 @@
                     });
 
                     if (userFound) {
-                        // Stockage des informations de session
+                        // Sauvegarde des infos pour les autres pages
                         localStorage.setItem('userId', userId);
                         localStorage.setItem('userPhone', phone);
                         
-                        // REDIRECTION VERS LA PAGE TABLEAU DE BORD (DASHBOARD)
+                        // Redirection vers le Dashboard corrigée ici
                         window.location.href = "dashboard.html";
                     } else {
                         alert("Mot de passe incorrect.");
