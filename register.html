@@ -133,7 +133,7 @@
             </div>
             
             <div class="input-group">
-                <input type="text" id="ref" placeholder="Code d'invitation" required>
+                <input type="text" id="ref" placeholder="Code d'invitation (Optionnel)">
             </div>
 
             <button type="submit" id="submitBtn" class="btn-register">S'INSCRIRE</button>
@@ -145,13 +145,24 @@
     </div>
 
     <script>
-        // CONFIGURATION DE TA BASE DE DONNÉES SPÉCIFIQUE
+        // CONFIGURATION FIREBASE
         const firebaseConfig = {
             databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/"
         };
         
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
+
+        // RÉCUPÉRATION AUTOMATIQUE DU CODE DE PARRAINAGE DANS L'URL
+        window.onload = function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const refCode = urlParams.get('ref');
+            if (refCode) {
+                document.getElementById('ref').value = refCode;
+                // On peut optionnellement griser la case si un code est présent
+                document.getElementById('ref').readOnly = true;
+            }
+        };
 
         document.getElementById('regForm').addEventListener('submit', function(e) {
             e.preventDefault();
@@ -160,7 +171,7 @@
             const phone = document.getElementById('phone').value;
             const pin = document.getElementById('pin').value;
             const pinConfirm = document.getElementById('pinConfirm').value;
-            const ref = document.getElementById('ref').value;
+            const referrerId = document.getElementById('ref').value;
             const btn = document.getElementById('submitBtn');
 
             if (pin.length !== 6) {
@@ -182,24 +193,22 @@
                     btn.disabled = false;
                     btn.innerText = "S'INSCRIRE";
                 } else {
-                    // Création de l'ID utilisateur et du code d'invitation propre
-                    const myInviteCode = "KIN" + Math.floor(1000 + Math.random() * 9000);
-                    
-                    // Enregistrement dans la base de données
+                    // Création de l'utilisateur
                     const newUserRef = db.ref('users').push();
+                    const newUserId = newUserRef.key;
+                    
                     newUserRef.set({
-                        userId: newUserRef.key,
+                        userId: newUserId,
                         name: name,
                         phone: phone,
                         password: pin,
-                        inviteCode: myInviteCode,
-                        referrer: ref,
-                        balance: 1000, // Ton bonus d'inscription
+                        referrer: referrerId || "Direct", // Lie l'utilisateur à son parrain
+                        balance: 1000, 
                         totalEarnings: 0,
+                        totalInvested: 0,
                         dateJoined: new Date().toLocaleString()
                     }).then(() => {
-                        alert("Compte créé avec succès ! Connectez-vous maintenant.");
-                        // Direction vers la page de connexion appelée index.html
+                        alert("Compte créé avec succès !");
                         window.location.href = "index.html";
                     }).catch(error => {
                         alert("Erreur: " + error.message);
