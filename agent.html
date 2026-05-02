@@ -96,7 +96,8 @@
     </div>
 
     <div class="bottom-nav">
-        <a href="dashbord.html" class="nav-item"><i class="fas fa-sync-alt text-lg"></i><span>Commencer</span></a>
+        <!-- LIEN CORRIGÉ ICI -->
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-sync-alt text-lg"></i><span>Commencer</span></a>
         <a href="investir.html" class="nav-item"><i class="fas fa-list-alt text-lg"></i><span>Investir</span></a>
         <a href="gains.html" class="nav-item"><i class="fas fa-chart-bar text-lg"></i><span>Gains</span></a>
         <a href="agent.html" class="nav-item active"><i class="fas fa-paper-plane text-lg"></i><span>Agent</span></a>
@@ -104,20 +105,16 @@
     </div>
 
     <script>
-        // CONFIGURATION FIREBASE
         const firebaseConfig = { databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
         const userId = localStorage.getItem('userId');
         
-        // CORRECTION : Le lien pointe maintenant vers register.html
         const platformLink = "https://henldelss.github.io/Kin-kin/register.html";
 
         if (userId) {
-            // Générer le lien avec l'ID utilisateur pour la page d'inscription
             document.getElementById('invite-link').innerText = `${platformLink}?ref=${userId}`;
 
-            // Calcul des statistiques de l'équipe en temps réel
             db.ref('users').on('value', (snapshot) => {
                 const allUsers = snapshot.val();
                 let lv1Count = 0, lv2Count = 0, lv3Count = 0;
@@ -127,15 +124,12 @@
                 if (allUsers) {
                     for (let id in allUsers) {
                         const user = allUsers[id];
-                        
-                        // Niveau 1 : Filleuls directs
                         if (user.referrer === userId) {
                             lv1Count++;
                             let invest = parseFloat(user.totalInvested || 0);
                             totalInvest += invest;
                             lv1Comm += invest * 0.30;
 
-                            // Niveau 2 : Filleuls des filleuls
                             for (let id2 in allUsers) {
                                 if (allUsers[id2].referrer === id) {
                                     lv2Count++;
@@ -143,7 +137,6 @@
                                     totalInvest += invest2;
                                     lv2Comm += invest2 * 0.02;
 
-                                    // Niveau 3 : Filleuls de niveau 2
                                     for (let id3 in allUsers) {
                                         if (allUsers[id3].referrer === id2) {
                                             lv3Count++;
@@ -158,16 +151,12 @@
                     }
                 }
 
-                // Mise à jour de l'affichage
                 document.getElementById('team-size').innerText = lv1Count + lv2Count + lv3Count;
                 document.getElementById('total-team-invest').innerText = totalInvest.toLocaleString('fr-FR') + " FC";
-                
                 document.getElementById('count-lv1').innerText = lv1Count;
                 document.getElementById('comm-lv1').innerText = lv1Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
-                
                 document.getElementById('count-lv2').innerText = lv2Count;
                 document.getElementById('comm-lv2').innerText = lv2Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
-                
                 document.getElementById('count-lv3').innerText = lv3Count;
                 document.getElementById('comm-lv3').innerText = lv3Comm.toLocaleString('fr-FR', {minimumFractionDigits: 2}) + " FC";
             });
