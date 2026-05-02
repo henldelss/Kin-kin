@@ -10,7 +10,7 @@
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
     <style>
-        body { background-color: #f8f9fa; font-family: sans-serif; }
+        body { background-color: #f8f9fa; font-family: sans-serif; padding-bottom: 100px; }
         .text-kin { color: #e60000; }
         .bg-kin { background-color: #e60000; }
         .input-group { background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px 15px; margin-bottom: 15px; display: flex; align-items: center; }
@@ -18,6 +18,11 @@
         .input-group i { color: #cbd5e1; width: 20px; text-align: center; }
         .btn-lier { background-color: #e60000; color: white; width: 100%; padding: 14px; border-radius: 30px; font-weight: bold; margin-top: 20px; cursor: pointer; transition: 0.3s; }
         .btn-lier:disabled { background-color: #ccc; cursor: not-allowed; }
+        
+        /* Navigation basse */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 12px 0; border-top: 1px solid #eee; z-index: 1000; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; font-size: 11px; color: #999; text-decoration: none; }
+        .nav-item.active { color: #e60000; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -66,13 +71,19 @@
         <button id="btn-submit" onclick="saveAccount()" class="btn-lier shadow-lg shadow-red-200">Lier mon compte</button>
     </div>
 
+    <!-- Navigation Basse Ajoutée -->
+    <div class="bottom-nav">
+        <a href="dashboard.html" class="nav-item"><i class="fas fa-sync-alt"></i><span>Commencer</span></a>
+        <a href="investir.html" class="nav-item"><i class="fas fa-list-alt"></i><span>Investir</span></a>
+        <a href="gains.html" class="nav-item"><i class="fas fa-chart-bar"></i><span>Gains</span></a>
+        <a href="agent.html" class="nav-item"><i class="fas fa-paper-plane"></i><span>Agent</span></a>
+        <a href="profil.html" class="nav-item active"><i class="fas fa-user-circle"></i><span>Profil</span></a>
+    </div>
+
     <script>
-        // CONFIGURATION FIREBASE
         const firebaseConfig = { databaseURL: "https://firstsolar-e2ba3-default-rtdb.firebaseio.com/" };
         if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
-        
-        // Récupération de l'ID utilisateur stocké lors de la connexion
         const userId = localStorage.getItem('userId');
 
         async function saveAccount() {
@@ -95,7 +106,6 @@
             btn.disabled = true;
             btn.innerText = "Liaison en cours...";
 
-            // Objet des informations bancaires
             const bankInfo = {
                 titulaire: name,
                 numero: number,
@@ -104,12 +114,8 @@
             };
 
             try {
-                // Enregistrement direct dans la base de données sous le profil de l'utilisateur
                 await db.ref('users/' + userId + '/bankInfo').set(bankInfo);
-                
-                // On garde une copie locale pour la rapidité d'affichage
                 localStorage.setItem('userBankInfo', JSON.stringify(bankInfo));
-                
                 alert("Votre compte a été lié avec succès à votre profil !");
                 window.location.href = "retrait.html"; 
             } catch (error) {
@@ -119,7 +125,6 @@
             }
         }
 
-        // Pré-remplissage si les données existent déjà dans la DB
         window.onload = function() {
             if(userId) {
                 db.ref('users/' + userId + '/bankInfo').once('value').then((snapshot) => {
